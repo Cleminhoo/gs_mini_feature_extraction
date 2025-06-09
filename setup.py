@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'stage'
+package_name = 'gs_feature_extraction'
 
 setup(
     name=package_name,
@@ -20,10 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'talker = stage.publisher_member_function:main',
-            'listener = stage.subscriber_member_function:main',
-            'image = stage.rgb_gray:main',
-            'image2 = stage.filter_depth:main'
+            'talker = gs_feature_extraction.publisher_member_function:main',
+            'listener = gs_feature_extraction.subscriber_member_function:main',
+            'image = gs_feature_extraction.rgb_gray:main',
+            'image2 = gs_feature_extraction.filter_depth:main'
         ],
     },
 )
