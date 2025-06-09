@@ -80,6 +80,7 @@ class ImageSubscriberPublisher(Node):
 
              # 6. Filtrage par aires
             contours, _ = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours2, _ = cv2.findContours(th1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #contours obtenus à partir du th1 pour tracer la nouvelle ellipse
             filtered = cv2.cvtColor(cv_image_8, cv2.COLOR_GRAY2BGR)  # pour dessiner en couleur
 
             min_area = 1000  # ← seuil ajustable selon ton capteur
@@ -88,6 +89,17 @@ class ImageSubscriberPublisher(Node):
             point1=[0,0]
             point2=[0,0]
             alpha = 0
+
+            for cnt2 in contours2:
+                area1 = cv2.contourArea(cnt2)
+                if area >= min_area:
+                    ellipse = cv2.fitEllipse(cnt2)
+                    try:
+                        cv2.ellipse(filtered,ellipse,(0,255,0),2)
+                    except:
+                        None
+                
+
 
             for cnt in contours:
                 area = cv2.contourArea(cnt)
@@ -103,7 +115,7 @@ class ImageSubscriberPublisher(Node):
 
                     point1 = (cv_image_8.shape[1] - 1, righty)
                     point2 = (0, lefty)
-                    ellipse = cv2.fitEllipse(cnt)
+                    #ellipse = cv2.fitEllipse(cnt)
                     x_center = int(ellipse[0][0])
                     y_center = int(ellipse[0][1])
                     alpha= math.atan2((point1[1]-point2[1]),(point1[0]-point2[0]))
@@ -111,7 +123,7 @@ class ImageSubscriberPublisher(Node):
 
                     try:
                         cv2.line(filtered, point1, point2, (255, 0, 0), 2)
-                        cv2.ellipse(filtered,ellipse,(0,255,0),2)
+                        #cv2.ellipse(filtered,ellipse,(0,255,0),2)
                         cv2.circle(filtered,(x_center,y_center),2,(0,255,0),-1) # paramètres : image dans laquelle on trace le cercle, coordonnées du centre, rayon, couleur du cercle en BGR(ici en vert) et épaisseur du trait ici -1 cercle plein. 
 
                     except:
