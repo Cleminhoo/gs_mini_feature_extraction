@@ -92,7 +92,7 @@ class ImageSubscriberPublisher(Node):
 
             for cnt2 in contours2:
                 area1 = cv2.contourArea(cnt2)
-                if area >= min_area:
+                if area1 >= min_area:
                     ellipse = cv2.fitEllipse(cnt2)
                     try:
                         cv2.ellipse(filtered,ellipse,(0,255,0),2)
