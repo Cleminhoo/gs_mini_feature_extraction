@@ -94,6 +94,8 @@ class ImageSubscriberPublisher(Node):
                 area1 = cv2.contourArea(cnt2)
                 if area1 >= min_area:
                     ellipse = cv2.fitEllipse(cnt2)
+                    x_center = int(ellipse[0][0])
+                    y_center = int(ellipse[0][1])
                     try:
                         cv2.ellipse(filtered,ellipse,(0,255,0),2)
                     except:
@@ -116,8 +118,8 @@ class ImageSubscriberPublisher(Node):
                     point1 = (cv_image_8.shape[1] - 1, righty)
                     point2 = (0, lefty)
                     #ellipse = cv2.fitEllipse(cnt)
-                    x_center = int(ellipse[0][0])
-                    y_center = int(ellipse[0][1])
+                    #x_center = int(ellipse[0][0])
+                    #y_center = int(ellipse[0][1])
                     alpha= math.atan2((point1[1]-point2[1]),(point1[0]-point2[0]))
                     print(alpha)
 
