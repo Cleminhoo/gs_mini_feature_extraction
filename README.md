@@ -3,6 +3,5 @@ hello
 
 ## Rosrun 
 ```
- ros2 run vb_tactile_sensors gs_image_depth
+ros2 run gs_feature_extraction image2
  ```
- 
