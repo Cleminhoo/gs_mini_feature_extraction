@@ -32,9 +32,9 @@ class ImageSubscriberPublisher(Node):
         self.bridge = CvBridge()
         self.get_logger().info('Node initialized: Subscribed to /gs_depth_image and publishing to /gs_new_img')
 
-    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha):
+    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha , depth_data ):
         msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha)]
+        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha), float(depth_data)]
         self.coord_publisher.publish(msg)
 
 
@@ -51,7 +51,7 @@ class ImageSubscriberPublisher(Node):
 
             
 
-            _,th1 = cv2.threshold(cv_image_8,10,255,cv2.THRESH_BINARY)
+            _,th1 = cv2.threshold(cv_image_8,20,255,cv2.THRESH_BINARY)
             thresh_mean = cv2.adaptiveThreshold(cv_image_8, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 
                 blockSize=11,  # taille du voisinage (doit être impair)
                 C=2            # constante soustraite à la moyenne
@@ -74,7 +74,7 @@ class ImageSubscriberPublisher(Node):
             # 4. Détection de contours avec Canny (ajusté pour plus de sensibilité)
             thinned = cv2.ximgproc.thinning(th1)
             #edges = cv2.Canny(blurred, threshold1=50, threshold2=120)
-            edges = cv2.Canny(th1, threshold1=50, threshold2=120)
+            edges = cv2.Canny(thinned, threshold1=50, threshold2=120)
             kernel = np.ones((3, 3), np.uint8)
             dilation = cv2.dilate(edges,kernel,iterations = 3)
 
@@ -92,11 +92,11 @@ class ImageSubscriberPublisher(Node):
 
             for cnt2 in contours2:
                 area1 = cv2.contourArea(cnt2)
-                if area1 >= min_area:
-                    ellipse = cv2.fitEllipse(cnt2)
-                    x_center = int(ellipse[0][0])
-                    y_center = int(ellipse[0][1])
+                if area1 >= min_area:                    
                     try:
+                        ellipse = cv2.fitEllipse(cnt2)
+                        x_center = int(ellipse[0][0])
+                        y_center = int(ellipse[0][1])
                         cv2.ellipse(filtered,ellipse,(0,255,0),2)
                     except:
                         None
@@ -126,12 +126,18 @@ class ImageSubscriberPublisher(Node):
                     try:
                         cv2.line(filtered, point1, point2, (255, 0, 0), 2)
                         #cv2.ellipse(filtered,ellipse,(0,255,0),2)
-                        cv2.circle(filtered,(x_center,y_center),2,(0,255,0),-1) # paramètres : image dans laquelle on trace le cercle, coordonnées du centre, rayon, couleur du cercle en BGR(ici en vert) et épaisseur du trait ici -1 cercle plein. 
+                        cv2.circle(filtered,(x_center,y_center),2,(0,255,255),-1) # paramètres : image dans laquelle on trace le cercle, coordonnées du centre, rayon, couleur du cercle en BGR(ici en vert) et épaisseur du trait ici -1 cercle plein. 
 
                     except:
                         None
 
-                self.publish_feature_coords(x_center, y_center, point1, point2,alpha)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
+                #send depth information
+                try:
+                    depth_data = cv_image_8[y_center] [x_center] # extraire la coordonnée z de l'image 
+                except:
+                    depth_data = 0.0
+
+                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
 
             
             # 7. Conversion finale en niveaux de gris
