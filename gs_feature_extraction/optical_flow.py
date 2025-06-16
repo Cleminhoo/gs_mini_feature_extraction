@@ -12,7 +12,7 @@ class OpticalFlowNode(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/gs_mini_image',
+            '/gs_mini_img',
             self.image_callback,
             10
         )
@@ -33,9 +33,10 @@ class OpticalFlowNode(Node):
     def image_callback(self, msg):
         self.get_logger().info(f"Image encoding: {msg.encoding}")
         try:
-            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+            
         except Exception as e:
-            self.get_logger().error(f"CV Bridge error: {e}")
+            self.get_logger().error(f"CV Bridge error: {e}")            
             return
 
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -47,7 +48,7 @@ class OpticalFlowNode(Node):
             return
 
         p1, st, err = cv.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.p0, None, **self.lk_params)
-
+        
         if p1 is not None:
             good_new = p1[st == 1]
             good_old = self.p0[st == 1]
