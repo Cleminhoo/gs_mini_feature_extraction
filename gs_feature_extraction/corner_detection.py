@@ -73,7 +73,7 @@ class CornerDetectionNode(Node):
 
         # Publication ROS
         try:
-            msg_out = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
+            msg_out = self.bridge.cv2_to_imgmsg(frame, encoding='passthrough')
             self.publisher.publish(msg_out)
         except Exception as e:
             self.get_logger().error(f"CV Bridge publish error: {e}")
