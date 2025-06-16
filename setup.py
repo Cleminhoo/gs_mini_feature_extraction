@@ -25,6 +25,7 @@ setup(
             'image = gs_feature_extraction.rgb_gray:main',
             'image2 = gs_feature_extraction.filter_depth:main',
             'optical_flow1 = gs_feature_extraction.optical_flow:main',
+            'corners = gs_feature_extracion.corner_detection:main',
         ],
     },
 )
