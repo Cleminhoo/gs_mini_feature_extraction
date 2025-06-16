@@ -9,7 +9,7 @@ import random
 
 class CornerDetectionNode(Node):
     def __init__(self):
-        super().__init__('optical_flow_node')
+        super().__init__('corner_detection_node')
 
         self.subscription = self.create_subscription(
             Image,
@@ -20,7 +20,8 @@ class CornerDetectionNode(Node):
 
         self.publisher = self.create_publisher(Image, '/gs_corner_img', 10)
 
-        self.max_corners = 50  # nombre max de coins à détecter
+        self.bridge = CvBridge()
+        self.max_corners = 20  # nombre max de coins à détecter
         self.quality_level = 0.01
         self.min_distance = 10
         self.block_size = 3
