@@ -31,6 +31,7 @@ class OpticalFlowNode(Node):
                               criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
 
     def image_callback(self, msg):
+        self.get_logger().info(f"Image encoding: {msg.encoding}")
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         except Exception as e:
