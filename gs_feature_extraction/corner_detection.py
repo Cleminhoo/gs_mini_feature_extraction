@@ -33,12 +33,19 @@ class CornerDetectionNode(Node):
 
     def image_callback(self, msg):
         self.get_logger().info(f"Image encoding: {msg.encoding}")
-        try:
-            frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        # try:
+        #     frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
             
-        except Exception as e:
-            self.get_logger().error(f"CV Bridge error: {e}")            
-            return
+        # except Exception as e:
+        #     self.get_logger().error(f"CV Bridge error: {e}")            
+        #     return
+            
+        cv_image = self.bridge.imgmsg_to_cv2(msg)
+
+        if msg.encoding == 'mono16':
+            frame = cv2.convertScaleAbs(cv_image, alpha=(255/65356))#conversion d'une image de 16 bits à 8 bits
+        else:
+            frame = cv_image.copy()
 
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
