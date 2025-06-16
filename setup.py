@@ -24,7 +24,7 @@ setup(
             'listener = gs_feature_extraction.subscriber_member_function:main',
             'image = gs_feature_extraction.rgb_gray:main',
             'image2 = gs_feature_extraction.filter_depth:main'
-            'optical_flow = gs_feature_extraction.optical_flow:main'
+            'optical_flow1 = gs_feature_extraction.optical_flow:main'
         ],
     },
 )
