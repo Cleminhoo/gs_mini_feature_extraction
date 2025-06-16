@@ -13,7 +13,7 @@ class CornerDetectionNode(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/gs_mini_img',
+            '/gs_depth_image',
             self.image_callback,
             10
         )
@@ -47,11 +47,11 @@ class CornerDetectionNode(Node):
         else:
             frame = cv_image.copy()
 
-        frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        #frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
         # Détection des coins
         corners = cv.goodFeaturesToTrack(
-            frame_gray,
+            frame,
             maxCorners=self.max_corners,
             qualityLevel=self.quality_level,
             minDistance=self.min_distance,
