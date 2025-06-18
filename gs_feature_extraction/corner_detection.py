@@ -6,8 +6,9 @@ import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import random
-from std_msgs.msg import Float32MultiArray
-import math
+#from scipy.interpolate import splprep, splev
+from scipy.spatial import distance
+
 
 class CornerDetectionNode(Node):
     def __init__(self):
@@ -32,12 +33,6 @@ class CornerDetectionNode(Node):
 
         self.get_logger().info("Shi-Tomasi corner detector node ready.")
 
-        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords2', 10)
-    
-    def publish_feature_coords(self, x_center, y_center,alpha):
-        msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center),float(alpha)]
-        self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
         self.get_logger().info(f"Image encoding: {msg.encoding}")
@@ -55,8 +50,19 @@ class CornerDetectionNode(Node):
         else:
             frame = cv_image.copy()
 
-        #frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        frame_bn = cv_image.copy()*0
+
+
+        #frame_rgb = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
+        #frame_bn = cv_image.copy()*0
+
+        _,th1 = cv.threshold(frame,20,255,cv.THRESH_BINARY)
+        # thresh_mean = cv2.adaptiveThreshold(cv_image_8, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 
+        #                                     blockSize=11,  # taille du voisinage (doit être impair)
+        #                                     C=2            # constante soustraite à la moyenne
+        #                                     )
+
+        frame = cv.bitwise_and(frame,frame,mask = th1)
+        frame_rgb = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
 
         # Détection des coins
         corners = cv.goodFeaturesToTrack(
@@ -75,46 +81,91 @@ class CornerDetectionNode(Node):
             for i in range(corners.shape[0]):
                 x, y = corners[i, 0]
                 points.append((x,y))
-                color = (255,255, 255)
-                cv.circle(frame_bn, (int(x), int(y)), 1, color, -1)
+                color = (0,255, 0)
+                cv.circle(frame_rgb, (int(x), int(y)), 2, color, -1)
 
             # Convertir en array numpy
             points = np.array(points)
             x_vals = points[:, 0]
             y_vals = points[:, 1]
-            alpha = 0
 
-            # Ajustement par une droite : y = m*x + b
-            if len(x_vals) >= 2:  # au moins 2 points requis
-                m, b = np.polyfit(x_vals, y_vals, 1)
 
-                # Calculer 2 points pour tracer la droite
-                x0, x1 = int(np.min(x_vals)), int(np.max(x_vals))
-                y0, y1 = int(m * x0 + b), int(m * x1 + b)
-                
-                #coordonnées du centre du cercle
-                x_center = (x1+x0)/2
-                y_center = (y1+y0)/2
+            ############### Filtrado de datos:##############################
 
-                # Tracer la droite sur l’image
-                cv.line(frame_bn, (x0, y0), (x1, y1), (255, 0, 0), 1)
-                #Trace centre de la droite 
-                cv.circle(frame_bn,(int(x_center),int(y_center)),2,(0,255,255),-1)
-                #calcul de l'angle alpha 
-                alpha= math.atan2((y1-y0),(x1-x0))
-                print(alpha)
+            # --- Filtrado estadístico multivariado (Mahalanobis) ---
+           
 
+            # Calculamos la media (centroide) y covarianza de los puntos
+            mean = np.mean(points, axis=0)
+            cov = np.cov(points.T)
+            inv_cov = np.linalg.inv(cov)
+
+            # Distancia de Mahalanobis de cada punto al centroide
+            mahal_dist = np.array([
+                distance.mahalanobis(p, mean, inv_cov) for p in points
+            ])
+
+            # Umbral para definir outliers (ajustable: cuanto mayor, más tolerante)
+            threshold = np.mean(mahal_dist) + 2*np.std(mahal_dist)
+
+            # Filtramos los inliers
+            inliers = mahal_dist < threshold
+            points_filtered = points[inliers]
+
+            # Actualizamos los puntos
+            points = points_filtered
+
+            ###############################################################
+
+
+            if len(points) >= 5:
+                ellipse = cv.fitEllipse(points.astype(np.float32))
+                center, axes, angle = ellipse
+                x_c, y_c = center
+                width, height = axes  # width: eje mayor, height: eje menor (según rotación)
+
+                # Dibujo de la elipse
+                cv.ellipse(frame_rgb, ellipse, (0, 255, 255), 1)
+
+                # Dibujo del centro
+                cv.circle(frame_rgb, (int(x_c), int(y_c)), 3, (0, 0, 255), -1)
+
+                # Convertimos el ángulo a radianes
+                theta = np.deg2rad(angle)
+
+                # Eje mayor (la mitad porque queremos ir desde el centro hacia los extremos)
+                dx_major = (width / 2) * np.cos(theta)
+                dy_major = (width / 2) * np.sin(theta)
+                pt1_major = (int(x_c - dx_major), int(y_c - dy_major))
+                pt2_major = (int(x_c + dx_major), int(y_c + dy_major))
+                cv.line(frame_rgb, pt1_major, pt2_major, (255, 0, 0), 2)
+
+                # Eje menor
+                dx_minor = (height / 2) * np.cos(theta + np.pi/2)
+                dy_minor = (height / 2) * np.sin(theta + np.pi/2)
+                pt1_minor = (int(x_c - dx_minor), int(y_c - dy_minor))
+                pt2_minor = (int(x_c + dx_minor), int(y_c + dy_minor))
+                cv.line(frame_rgb, pt1_minor, pt2_minor, (0, 255, 0), 2)
+
+
+            # # Ajustement par une droite : y = m*x + b
+            # if len(x_vals) >= 2:  # au moins 2 points requis
+            #     m, b = np.polyfit(x_vals, y_vals, 1)
+
+            #     # Calculer 2 points pour tracer la droite
+            #     x0, x1 = int(np.min(x_vals)), int(np.max(x_vals))
+            #     y0, y1 = int(m * x0 + b), int(m * x1 + b)
+
+            #     # Tracer la droite sur l’image
+            #     cv.line(frame_rgb, (x0, y0), (x1, y1), (0, 0, 255), 1)
 
         # Affichage pour debug
-        cv.imshow("Corners", frame_bn)
+        cv.imshow("Corners", frame_rgb)
         cv.waitKey(1)
-
-        #publication des données voulues(centre du cercle et angle)
-        self.publish_feature_coords(x_center, y_center,alpha)
 
         # Publication ROS
         try:
-            msg_out = self.bridge.cv2_to_imgmsg(frame_bn, encoding='passthrough')
+            msg_out = self.bridge.cv2_to_imgmsg(frame_rgb, encoding='passthrough')
             self.publisher.publish(msg_out)
         except Exception as e:
             self.get_logger().error(f"CV Bridge publish error: {e}")
