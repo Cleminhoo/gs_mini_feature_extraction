@@ -8,7 +8,8 @@ from cv_bridge import CvBridge
 import random
 #from scipy.interpolate import splprep, splev
 from scipy.spatial import distance
-
+from std_msgs.msg import Float32MultiArray
+import math
 
 class CornerDetectionNode(Node):
     def __init__(self):
@@ -31,8 +32,14 @@ class CornerDetectionNode(Node):
         self.use_harris = False
         self.k = 0.04
 
+        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords2', 10)
+
         self.get_logger().info("Shi-Tomasi corner detector node ready.")
 
+    def publish_feature_coords(self, x_center, y_center,alpha):
+        msg = Float32MultiArray()
+        msg.data = [float(x_center), float(y_center),float(alpha)]
+        self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
         self.get_logger().info(f"Image encoding: {msg.encoding}")
@@ -147,6 +154,11 @@ class CornerDetectionNode(Node):
                 pt2_minor = (int(x_c + dx_minor), int(y_c + dy_minor))
                 cv.line(frame_rgb, pt1_minor, pt2_minor, (0, 255, 0), 2)
 
+                alpha= math.atan2((pt1_major[1]-pt2_major[1]),(pt1_major[0]-pt2_major[0]))
+                print(alpha)
+                
+                #Publication des données voulues 
+                self.publish_feature_coords(x_c, y_c,alpha)
 
             # # Ajustement par une droite : y = m*x + b
             # if len(x_vals) >= 2:  # au moins 2 points requis
@@ -162,6 +174,8 @@ class CornerDetectionNode(Node):
         # Affichage pour debug
         cv.imshow("Corners", frame_rgb)
         cv.waitKey(1)
+
+        
 
         # Publication ROS
         try:
