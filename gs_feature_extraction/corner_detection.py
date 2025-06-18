@@ -6,6 +6,7 @@ import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import random
+from std_msgs.msg import Float32MultiArray
 
 class CornerDetectionNode(Node):
     def __init__(self):
