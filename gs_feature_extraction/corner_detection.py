@@ -30,6 +30,12 @@ class CornerDetectionNode(Node):
 
         self.get_logger().info("Shi-Tomasi corner detector node ready.")
 
+        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords2', 10)
+    
+    def publish_feature_coords(self, x_center, y_center,alpha):
+        msg = Float32MultiArray()
+        msg.data = [float(x_center), float(y_center),float(alpha)]
+        self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
         self.get_logger().info(f"Image encoding: {msg.encoding}")
@@ -74,6 +80,8 @@ class CornerDetectionNode(Node):
             points = np.array(points)
             x_vals = points[:, 0]
             y_vals = points[:, 1]
+            x_center = (x1+x0)/2
+            y_center = (y1+y0)/2
 
             # Ajustement par une droite : y = m*x + b
             if len(x_vals) >= 2:  # au moins 2 points requis
@@ -82,13 +90,20 @@ class CornerDetectionNode(Node):
                 # Calculer 2 points pour tracer la droite
                 x0, x1 = int(np.min(x_vals)), int(np.max(x_vals))
                 y0, y1 = int(m * x0 + b), int(m * x1 + b)
+                
 
                 # Tracer la droite sur l’image
                 cv.line(frame_bn, (x0, y0), (x1, y1), (255, 0, 0), 1)
+                #Trace centre de la droite 
+                cv2.circle(frame_bn,(x_center,y_center),2,(0,255,255),-1)
+
 
         # Affichage pour debug
         cv.imshow("Corners", frame_bn)
         cv.waitKey(1)
+
+        #publication des données voulues(centre du cercle et angle)
+        self.publish_feature_coords(x_center, y_center,alpha)
 
         # Publication ROS
         try:
