@@ -100,6 +100,7 @@ class CornerDetectionNode(Node):
                 cv.line(frame_bn, (x0, y0), (x1, y1), (255, 0, 0), 1)
                 #Trace centre de la droite 
                 cv.circle(frame_bn,(int(x_center),int(y_center)),2,(0,255,255),-1)
+                #calcul de l'angle alpha 
                 alpha= math.atan2((y1-y0),(x1-x0))
                 print(alpha)
 
