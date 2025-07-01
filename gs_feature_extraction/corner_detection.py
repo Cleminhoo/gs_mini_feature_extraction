@@ -102,25 +102,25 @@ class CornerDetectionNode(Node):
             # --- Filtrado estadístico multivariado (Mahalanobis) ---
            
 
-            # Calculamos la media (centroide) y covarianza de los puntos
-            mean = np.mean(points, axis=0)
-            cov = np.cov(points.T)
-            inv_cov = np.linalg.inv(cov)
+            ## Calculamos la media (centroide) y covarianza de los puntos
+            #mean = np.mean(points, axis=0)
+            #cov = np.cov(points.T)
+            #inv_cov = np.linalg.inv(cov)
 
-            # Distancia de Mahalanobis de cada punto al centroide
-            mahal_dist = np.array([
-                distance.mahalanobis(p, mean, inv_cov) for p in points
-            ])
+            ## Distancia de Mahalanobis de cada punto al centroide
+            #mahal_dist = np.array([
+            #    distance.mahalanobis(p, mean, inv_cov) for p in points
+            #])
 
             # Umbral para definir outliers (ajustable: cuanto mayor, más tolerante)
-            threshold = np.mean(mahal_dist) + 2*np.std(mahal_dist)
+            #threshold = np.mean(mahal_dist) + 2*np.std(mahal_dist)
 
             # Filtramos los inliers
-            inliers = mahal_dist < threshold
-            points_filtered = points[inliers]
+            #inliers = mahal_dist < threshold
+            #points_filtered = points[inliers]
 
             # Actualizamos los puntos
-            points = points_filtered
+            #points = points_filtered
 
             ###############################################################
 
