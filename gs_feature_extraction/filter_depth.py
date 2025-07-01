@@ -113,7 +113,8 @@ class ImageSubscriberPublisher(Node):
                     cy = int(M['m01']/M['m00'])
 
                     cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
-                    r = sqrt((cx-160)+(cy-140))
+            
+                    r = sqrt((cx-160)**2+(cy-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
 
 
             # Approximation d’une ligne sur le premier contour

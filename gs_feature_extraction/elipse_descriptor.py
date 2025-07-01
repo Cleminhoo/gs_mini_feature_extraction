@@ -23,12 +23,13 @@ class ImageSubscriberPublisher(Node):
         self.bridge = CvBridge()
         self.get_logger().info('Node initialized: Subscribed to /gs_depth_image and publishing to /gs_new_img')
 
-    def publish_feature_coords(self, x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2):
+    def publish_feature_coords(self, x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2, r):
         values = [
             float(x_center), float(y_center),
             float(point1[0]), float(point1[1]),
             float(point2[0]), float(point2[1]),
-            float(alpha), float(depth_data_p1),float(depth_data_p2)
+            float(alpha), float(depth_data_p1),float(depth_data_p2),
+            float(r)
         ]
 
         if any(not math.isfinite(v) for v in values):
@@ -138,7 +139,9 @@ class ImageSubscriberPublisher(Node):
                     depth_data_p1 = 0.0
                     depth_data_p2 = 0.0
 
-                self.publish_feature_coords(x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2)
+                r = sqrt((point1-160)**2+(point2-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+
+                self.publish_feature_coords(x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2,r)
 
         filtered_msg = self.bridge.cv2_to_imgmsg(filtered, encoding='bgr8')
         self.publisher.publish(filtered_msg)
