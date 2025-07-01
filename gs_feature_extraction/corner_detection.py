@@ -157,7 +157,7 @@ class CornerDetectionNode(Node):
                 alpha= math.atan2((pt1_major[1]-pt2_major[1]),(pt1_major[0]-pt2_major[0]))
                 print(alpha)
                 
-                r = sqrt((x_c-160)**2+(y_c-140)**2) # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
+                r = math.sqrt((x_c-160)**2+(y_c-140)**2) # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
                 print(r)
                 
                 #Publication des données voulues 

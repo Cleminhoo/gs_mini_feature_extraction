@@ -114,7 +114,7 @@ class ImageSubscriberPublisher(Node):
 
                     cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
             
-                    r = sqrt((cx-160)**2+(cy-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                    r = math.sqrt((cx-160)**2+(cy-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                     print(r)
 
             # Approximation d’une ligne sur le premier contour
