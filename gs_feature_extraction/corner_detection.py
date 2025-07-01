@@ -36,9 +36,9 @@ class CornerDetectionNode(Node):
 
         self.get_logger().info("Shi-Tomasi corner detector node ready.")
 
-    def publish_feature_coords(self, x_center, y_center,alpha):
+    def publish_feature_coords(self, x_center, y_center,alpha, r):
         msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center),float(alpha)]
+        msg.data = [float(x_center), float(y_center),float(alpha), float(r)]
         self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
@@ -157,8 +157,9 @@ class CornerDetectionNode(Node):
                 alpha= math.atan2((pt1_major[1]-pt2_major[1]),(pt1_major[0]-pt2_major[0]))
                 print(alpha)
                 
+                r = sqrt((x_c-160)+(y_c-140))
                 #Publication des données voulues 
-                self.publish_feature_coords(x_c, y_c,alpha)
+                self.publish_feature_coords(x_c, y_c,alpha,r)
 
             # # Ajustement par une droite : y = m*x + b
             # if len(x_vals) >= 2:  # au moins 2 points requis

@@ -26,6 +26,7 @@ setup(
             'image2 = gs_feature_extraction.filter_depth:main',
             'optical_flow1 = gs_feature_extraction.optical_flow:main',
             'corners = gs_feature_extraction.corner_detection:main',
+            'elipse = gs_feature_extraction.elipse_descriptor:main',
         ],
     },
 )
