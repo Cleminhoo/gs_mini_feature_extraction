@@ -76,7 +76,7 @@ class ImageSubscriberPublisher(Node):
             #edges = cv2.Canny(blurred, threshold1=50, threshold2=120)
             edges = cv2.Canny(thinned, threshold1=50, threshold2=120)
             kernel = np.ones((3, 3), np.uint8)
-            dilation = cv2.dilate(edges,kernel,iterations = 3)
+            dilation = cv2.dilate(edges,kernel,iterations = 2)
 
              # 6. Filtrage par aires
             contours, _ = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -90,24 +90,30 @@ class ImageSubscriberPublisher(Node):
             point2=[0,0]
             alpha = 0
 
-            for cnt2 in contours2:
-                area1 = cv2.contourArea(cnt2)
-                if area1 >= min_area:                    
-                    try:
-                        ellipse = cv2.fitEllipse(cnt2)
-                        x_center = int(ellipse[0][0])
-                        y_center = int(ellipse[0][1])
-                        cv2.ellipse(filtered,ellipse,(0,255,0),2)
-                    except:
-                        None
+          #  for cnt2 in contours2:
+          #      area1 = cv2.contourArea(cnt2)
+          #      if area1 >= min_area:                    
+          #          try:
+          #              ellipse = cv2.fitEllipse(cnt2)
+          #              x_center = int(ellipse[0][0])
+          #              y_center = int(ellipse[0][1])
+          #              cv2.ellipse(filtered,ellipse,(0,255,0),2)
+           #         except:
+           #             None
                 
 
 
             for cnt in contours:
                 area = cv2.contourArea(cnt)
                 if area >= min_area:
-                    cv2.drawContours(filtered, [cnt], -1, (0, 0, 255), thickness=cv2.FILLED)
-                
+                    cv2.drawContours(filtered, [cnt], -1, (0, 0, 255), 1)
+                    M = cv2.moments(cnt)
+                    print( M )
+                    cx = int(M['m10']/M['m00'])
+                    cy = int(M['m01']/M['m00'])
+
+                    cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
+
 
             # Approximation d’une ligne sur le premier contour
                     [vx, vy, x, y] = cv2.fitLine(cnt, cv2.DIST_L2, 0, 0.01, 0.01)
