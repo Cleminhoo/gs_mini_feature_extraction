@@ -158,6 +158,8 @@ class CornerDetectionNode(Node):
                 print(alpha)
                 
                 r = sqrt((x_c-160)**2+(y_c-140)**2) # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
+                print(r)
+                
                 #Publication des données voulues 
                 self.publish_feature_coords(x_c, y_c,alpha,r)
 

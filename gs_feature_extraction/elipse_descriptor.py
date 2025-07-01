@@ -140,6 +140,7 @@ class ImageSubscriberPublisher(Node):
                     depth_data_p2 = 0.0
 
                 r = sqrt((point1-160)**2+(point2-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                print(r)
 
                 self.publish_feature_coords(x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2,r)
 
