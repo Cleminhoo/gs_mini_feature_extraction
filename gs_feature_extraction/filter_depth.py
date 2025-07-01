@@ -32,9 +32,9 @@ class ImageSubscriberPublisher(Node):
         self.bridge = CvBridge()
         self.get_logger().info('Node initialized: Subscribed to /gs_depth_image and publishing to /gs_new_img')
 
-    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha , depth_data ):
+    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha , depth_data , r):
         msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha), float(depth_data)]
+        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha), float(depth_data), float(r)]
         self.coord_publisher.publish(msg)
 
 
@@ -113,6 +113,7 @@ class ImageSubscriberPublisher(Node):
                     cy = int(M['m01']/M['m00'])
 
                     cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
+                    r = sqrt((cx-160)+(cy-140))
 
 
             # Approximation d’une ligne sur le premier contour
@@ -143,7 +144,7 @@ class ImageSubscriberPublisher(Node):
                 except:
                     depth_data = 0.0
 
-                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
+                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
 
             
             # 7. Conversion finale en niveaux de gris
