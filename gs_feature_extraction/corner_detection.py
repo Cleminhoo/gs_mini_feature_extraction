@@ -15,6 +15,9 @@ class CornerDetectionNode(Node):
     def __init__(self):
         super().__init__('corner_detection_node')
 
+        self.image_h = 240
+        self.image_w = 320
+
         self.subscription = self.create_subscription(
             Image,
             '/gs_depth_image',
@@ -36,9 +39,9 @@ class CornerDetectionNode(Node):
 
         self.get_logger().info("Shi-Tomasi corner detector node ready.")
 
-    def publish_feature_coords(self, x_center, y_center,alpha, r):
+    def publish_feature_coords(self, x_center, y_center,pt1_major, pt2_major, alpha, depth_data_p1, depth_data_p2, r):
         msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center),float(alpha), float(r)]
+        msg.data = [float(x_center), float(y_center), float(pt1_major[0]), float(pt1_major[1]), float(pt2_major[0]), float(pt2_major[1]), float(alpha), float(depth_data_p1) ,float(depth_data_p2), float(r)]
         self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
@@ -57,7 +60,7 @@ class CornerDetectionNode(Node):
         else:
             frame = cv_image.copy()
 
-
+        h, w = cv_image.shape[:2]
 
         #frame_rgb = cv.cvtColor(frame, cv.COLOR_GRAY2RGB)
         #frame_bn = cv_image.copy()*0
@@ -157,11 +160,32 @@ class CornerDetectionNode(Node):
                 alpha= math.atan2((pt1_major[1]-pt2_major[1]),(pt1_major[0]-pt2_major[0]))
                 print(alpha)
                 
+                #limitacion de los puntos 1 y 2
+                pt1_major = (min(max(pt1_major[1], 0), self.image_h-1),min(max(pt1_major[0], 0), self.image_w-1))
+                pt2_major = (min(max(pt2_major[1], 0), self.image_h-1),min(max(pt2_major[0], 0), self.image_w-1))
+
+                print("Punto_1x:",  pt1_major[0] )
+                print("Punto_1y:",  pt1_major[1] )
+                print("Punto_2x:",  pt2_major[0] )
+                print("Punto_2y:",  pt2_major[1] )
+
+
+                if 0 <= y_c < h and 0 <= x_c < w:
+                    depth_data_p1 = float(frame[pt1_major[0],pt1_major[1]])
+                    depth_data_p2 = float(frame[pt2_major[0],pt2_major[1]])
+                    print("D_p1: ",depth_data_p1)
+                    print("D_p2: ",depth_data_p2)
+                    #depth_data = 0.0
+                else:
+                    self.get_logger().warn("Center out of image bounds.")
+                    depth_data_p1 = 0.0
+                    depth_data_p2 = 0.0
+
                 r = math.sqrt((x_c-160)**2+(y_c-140)**2) # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
                 print(r)
                 
                 #Publication des données voulues 
-                self.publish_feature_coords(x_c, y_c,alpha,r)
+                self.publish_feature_coords(x_c, y_c, pt1_major, pt2_major, alpha, depth_data_p1, depth_data_p2, r)
 
             # # Ajustement par une droite : y = m*x + b
             # if len(x_vals) >= 2:  # au moins 2 points requis

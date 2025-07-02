@@ -11,6 +11,9 @@ class ImageSubscriberPublisher(Node):
     def __init__(self):
         super().__init__('image_subscriber_publisher')
 
+        self.image_h = 240
+        self.image_w = 320
+
         # Subscriber
         self.subscription = self.create_subscription(
             Image,
@@ -26,15 +29,15 @@ class ImageSubscriberPublisher(Node):
             10
         )
 
-        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords', 10)
+        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords2', 10)
 
         # CV Bridge
         self.bridge = CvBridge()
         self.get_logger().info('Node initialized: Subscribed to /gs_depth_image and publishing to /gs_new_img')
 
-    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha , depth_data , r):
+    def publish_feature_coords(self, x_center, y_center, point1, point2,alpha , depth_data_p1, depth_data_p2 , r):
         msg = Float32MultiArray()
-        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha), float(depth_data), float(r)]
+        msg.data = [float(x_center), float(y_center), float(point1[0]), float(point1[1]), float(point2[0]), float(point2[1]),float(alpha), float(depth_data_p1),float(depth_data_p2), float(r)]
         self.coord_publisher.publish(msg)
 
 
@@ -83,12 +86,15 @@ class ImageSubscriberPublisher(Node):
             contours2, _ = cv2.findContours(th1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #contours obtenus à partir du th1 pour tracer la nouvelle ellipse
             filtered = cv2.cvtColor(cv_image_8, cv2.COLOR_GRAY2BGR)  # pour dessiner en couleur
 
+            h, w = cv_image.shape[:2]
+
             min_area = 1000  # ← seuil ajustable selon ton capteur
             x_center=0
             y_center=0
             point1=[0,0]
             point2=[0,0]
             alpha = 0
+            r=0
 
           #  for cnt2 in contours2:
           #      area1 = cv2.contourArea(cnt2)
@@ -113,7 +119,7 @@ class ImageSubscriberPublisher(Node):
                     cy = int(M['m01']/M['m00'])
 
                     cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
-            
+
                     r = math.sqrt((cx-160)**2+(cy-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                     print(r)
 
@@ -140,12 +146,35 @@ class ImageSubscriberPublisher(Node):
                         None
 
                 #send depth information
-                try:
-                    depth_data = cv_image_8[y_center] [x_center] # extraire la coordonnée z de l'image 
-                except:
-                    depth_data = 0.0
+                # try:
+                #     depth_data = cv_image_8[y_center] [x_center] # extraire la coordonnée z de l'image 
+                # except:
+                #     depth_data = 0.0
 
-                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
+                #limitacion de los puntos 1 y 2
+                point1 = (min(max(point1[1], 0), self.image_h-1),min(max(point1[0], 0), self.image_w-1))
+                point2 = (min(max(point2[1], 0), self.image_h-1),min(max(point2[0], 0), self.image_w-1))
+
+                print("Punto_1x:",  point1[0] )
+                print("Punto_1y:",  point1[1] )
+                print("Punto_2x:",  point2[0] )
+                print("Punto_2y:",  point2[1] )
+
+
+                if 0 <= y_center < h and 0 <= x_center < w:
+                    depth_data_p1 = float(cv_image_8[point1[0],point1[1]])
+                    depth_data_p2 = float(cv_image_8[point2[0],point2[1]])
+                    print("D_p1: ",depth_data_p1)
+                    print("D_p2: ",depth_data_p2)
+                    #depth_data = 0.0
+                else:
+                    self.get_logger().warn("Center out of image bounds.")
+                    depth_data_p1 = 0.0
+                    depth_data_p2 = 0.0
+                
+                
+
+                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data_p1, depth_data_p2,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
 
             
             # 7. Conversion finale en niveaux de gris
