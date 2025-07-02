@@ -18,7 +18,7 @@ class ImageSubscriberPublisher(Node):
             Image, '/gs_depth_image', self.image_callback, 10
         )
         self.publisher = self.create_publisher(Image, '/gs_new_img', 10)
-        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords', 10)
+        self.coord_publisher = self.create_publisher(Float32MultiArray, '/gs_feature_coords2', 10)
 
         self.bridge = CvBridge()
         self.get_logger().info('Node initialized: Subscribed to /gs_depth_image and publishing to /gs_new_img')
@@ -139,7 +139,7 @@ class ImageSubscriberPublisher(Node):
                     depth_data_p1 = 0.0
                     depth_data_p2 = 0.0
 
-                r = math.sqrt((point1-160)**2+(point2-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                r = math.sqrt((x_center-160)**2+(y_center-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                 print(r)
 
                 self.publish_feature_coords(x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2,r)
