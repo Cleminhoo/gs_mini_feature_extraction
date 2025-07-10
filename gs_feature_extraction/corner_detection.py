@@ -142,6 +142,7 @@ class CornerDetectionNode(Node):
 
                 # Convertimos el ángulo a radianes
                 theta = np.deg2rad(angle)
+                alpha = math.pi/2.0-theta
 
                 # Eje mayor (la mitad porque queremos ir desde el centro hacia los extremos)
                 dx_major = (width / 2) * np.cos(theta)
@@ -157,24 +158,15 @@ class CornerDetectionNode(Node):
                 pt2_minor = (int(x_c + dx_minor), int(y_c + dy_minor))
                 cv.line(frame_rgb, pt1_minor, pt2_minor, (0, 255, 0), 2)
 
-                alpha= math.atan2((pt1_major[1]-pt2_major[1]),(pt1_major[0]-pt2_major[0]))
-                print(alpha)
-                
+                  
                 #limitacion de los puntos 1 y 2
                 pt1_major = (min(max(pt1_major[1], 0), self.image_h-1),min(max(pt1_major[0], 0), self.image_w-1))
                 pt2_major = (min(max(pt2_major[1], 0), self.image_h-1),min(max(pt2_major[0], 0), self.image_w-1))
-
-                print("Punto_1x:",  pt1_major[0] )
-                print("Punto_1y:",  pt1_major[1] )
-                print("Punto_2x:",  pt2_major[0] )
-                print("Punto_2y:",  pt2_major[1] )
 
 
                 if 0 <= y_c < h and 0 <= x_c < w:
                     depth_data_p1 = float(frame[pt1_major[0],pt1_major[1]])
                     depth_data_p2 = float(frame[pt2_major[0],pt2_major[1]])
-                    print("D_p1: ",depth_data_p1)
-                    print("D_p2: ",depth_data_p2)
                     #depth_data = 0.0
                 else:
                     self.get_logger().warn("Center out of image bounds.")

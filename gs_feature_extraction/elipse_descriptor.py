@@ -142,7 +142,7 @@ class ImageSubscriberPublisher(Node):
                 r = math.sqrt((x_center-160)**2+(y_center-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                 print(r)
 
-                self.publish_feature_coords(x_center, y_center, point1, point2, alpha, depth_data_p1,depth_data_p2,r)
+                self.publish_feature_coords(x_center, y_center, point1, point2, math.pi-alpha, depth_data_p1,depth_data_p2,r)
 
         filtered_msg = self.bridge.cv2_to_imgmsg(filtered, encoding='bgr8')
         self.publisher.publish(filtered_msg)

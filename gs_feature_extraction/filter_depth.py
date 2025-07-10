@@ -94,6 +94,8 @@ class ImageSubscriberPublisher(Node):
             point1=[0,0]
             point2=[0,0]
             alpha = 0
+            cx = 0
+            cy = 0
             r=0
 
           #  for cnt2 in contours2:
@@ -134,13 +136,15 @@ class ImageSubscriberPublisher(Node):
                     #ellipse = cv2.fitEllipse(cnt)
                     #x_center = int(ellipse[0][0])
                     #y_center = int(ellipse[0][1])
-                    alpha= math.atan2((point1[1]-point2[1]),(point1[0]-point2[0]))
-                    print(alpha)
+                    alpha= math.pi/2 +math.atan2((point2[0]-point1[0]),(point2[1]-point1[1]))
+
 
                     try:
                         cv2.line(filtered, point1, point2, (255, 0, 0), 2)
+                        cv2.circle(filtered,point1, 2,(0,0,255),-1)
+                        cv2.circle(filtered,point2, 2,(255,255,0),-1)
                         #cv2.ellipse(filtered,ellipse,(0,255,0),2)
-                        cv2.circle(filtered,(x_center,y_center),2,(0,255,255),-1) # paramètres : image dans laquelle on trace le cercle, coordonnées du centre, rayon, couleur du cercle en BGR(ici en vert) et épaisseur du trait ici -1 cercle plein. 
+                        #cv2.circle(filtered,(x_center,y_center),2,(0,255,255),-1) # paramètres : image dans laquelle on trace le cercle, coordonnées du centre, rayon, couleur du cercle en BGR(ici en vert) et épaisseur du trait ici -1 cercle plein. 
 
                     except:
                         None
@@ -174,7 +178,7 @@ class ImageSubscriberPublisher(Node):
                 
                 
 
-                self.publish_feature_coords(x_center, y_center, point1, point2,alpha, depth_data_p1, depth_data_p2,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
+                self.publish_feature_coords(cx, cy, point1, point2,alpha, depth_data_p1, depth_data_p2,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
 
             
             # 7. Conversion finale en niveaux de gris
