@@ -6,8 +6,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
 import torch
-from utils import *
-from models import UnetPlusPlus, PSPNet, DeepLabV3Plus, UNET
+from .utils import *
+from .models import UnetPlusPlus, PSPNet, DeepLabV3Plus, UNET
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np
@@ -32,15 +32,19 @@ class PanelLineDetector(Node):
         )
 
         # Chargement du modèle
-        PATH = "/root/gelsight_ros2/"
+        PATH = "/root/gelsight_ros2/ros2_vbtsensors/src/gs_mini_feature_extraction/gs_feature_extraction/"
         self.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
         n_epoch = 49
+        
+        
         self.model = UnetPlusPlus("resnet18", "imagenet", in_channels=3, out_channels=1).to(self.DEVICE)
         load_checkpoint(torch.load(PATH + f"epochs/checkpoint_epoch_{n_epoch}.pth.tar"), self.model)
         self.test_transform = A.Compose([
-            A.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], max_pixel_value=255.0),
-            ToTensorV2(),
-        ])
+	    A.PadIfNeeded(min_height=256, min_width=320, border_mode=0, value=0),  # padding a tamaño mínimo
+	    A.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], max_pixel_value=255.0),
+	    ToTensorV2(),
+	])
+
         self.get_logger().info(f"Network model loaded on {self.DEVICE}")
 
         # Timer pour déclencher l'analyse périodiquement
@@ -55,7 +59,8 @@ class PanelLineDetector(Node):
         self.flag = False
 
         # Traitement de l'image
-        image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        #image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
         image = self.test_transform(image=image)['image']
         image = image.to(self.DEVICE).unsqueeze(0)
 
