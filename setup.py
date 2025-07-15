@@ -28,6 +28,7 @@ setup(
             'corners = gs_feature_extraction.corner_detection:main',
             'elipse = gs_feature_extraction.elipse_descriptor:main',
             'save_img = gs_feature_extraction.save_images:main',
+            'detect = gs_feature_extraction.detect:main',
         ],
     },
 )
