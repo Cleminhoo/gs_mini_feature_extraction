@@ -11,6 +11,8 @@ from scipy.spatial import distance
 from std_msgs.msg import Float32MultiArray
 import math
 
+import time
+
 class CornerDetectionNode(Node):
     def __init__(self):
         super().__init__('corner_detection_node')
@@ -54,6 +56,7 @@ class CornerDetectionNode(Node):
         #     return
             
         cv_image = self.bridge.imgmsg_to_cv2(msg)
+        start = time.time()
 
         if msg.encoding == 'mono16':
             frame = cv2.convertScaleAbs(cv_image, alpha=(255/65356))#conversion d'une image de 16 bits à 8 bits
@@ -194,7 +197,7 @@ class CornerDetectionNode(Node):
         cv.imshow("Corners", frame_rgb)
         cv.waitKey(1)
 
-        
+        print( "Process time: " + str(1000*(time.time() - start)))
 
         # Publication ROS
         try:

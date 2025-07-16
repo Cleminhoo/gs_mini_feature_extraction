@@ -12,6 +12,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np
 
+import time
+
 class PanelLineDetector(Node):
     def __init__(self):
         super().__init__('panels_lines_detection')
@@ -61,6 +63,7 @@ class PanelLineDetector(Node):
         # Traitement de l'image
         #image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
+        start = time.time()
         image = self.test_transform(image=image)['image']
         image = image.to(self.DEVICE).unsqueeze(0)
 
@@ -78,6 +81,7 @@ class PanelLineDetector(Node):
         image_msg.header.stamp = msg.header.stamp
         image_msg.header.frame_id = "os_sensor"
         self.detection_img_pub.publish(image_msg)
+        print( "Process time: " + str(1000*(time.time() - start)))
 
 def main(args=None):
     rclpy.init(args=args)

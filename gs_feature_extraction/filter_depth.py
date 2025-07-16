@@ -7,6 +7,8 @@ import numpy as np
 from std_msgs.msg import Float32MultiArray
 import math
 
+import time
+
 class ImageSubscriberPublisher(Node):
     def __init__(self):
         super().__init__('image_subscriber_publisher')
@@ -46,6 +48,7 @@ class ImageSubscriberPublisher(Node):
             self.get_logger().info(f"Image encoding: {msg.encoding}")
             
             cv_image = self.bridge.imgmsg_to_cv2(msg)
+            start = time.time()
 
             if msg.encoding == 'mono16':
                 cv_image_8 = cv2.convertScaleAbs(cv_image, alpha=(255/65356))#conversion d'une image de 16 bits à 8 bits
@@ -187,6 +190,7 @@ class ImageSubscriberPublisher(Node):
 
             # 8. Publication
             filtered_msg = self.bridge.cv2_to_imgmsg(filtered, encoding='bgr8')
+            print( "Process time: " + str(1000*(time.time() - start)))
             self.publisher.publish(filtered_msg)
  
 
