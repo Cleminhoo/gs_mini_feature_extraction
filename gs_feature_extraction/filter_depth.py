@@ -25,7 +25,7 @@ class ImageSubscriberPublisher(Node):
         # Publisher
         self.publisher = self.create_publisher(
             Image,
-            '/gs_new_img',
+            '/gs_img_filter',
             10
         )
 

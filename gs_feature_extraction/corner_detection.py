@@ -25,7 +25,7 @@ class CornerDetectionNode(Node):
             10
         )
 
-        self.publisher = self.create_publisher(Image, '/gs_corner_img', 10)
+        self.publisher = self.create_publisher(Image, '/gs_img_corner', 10)
 
         self.bridge = CvBridge()
         self.max_corners = 20  # nombre max de coins à détecter

@@ -21,7 +21,7 @@ class PanelLineDetector(Node):
         self.bridge = CvBridge()
 
         # Publisher
-        self.detection_img_pub = self.create_publisher(Image, '/panels_lines_img', 10)
+        self.detection_img_pub = self.create_publisher(Image, '/gs_img_nn', 10)
 
         # Subscriber
         self.subscription = self.create_subscription(
@@ -65,10 +65,13 @@ class PanelLineDetector(Node):
         image = image.to(self.DEVICE).unsqueeze(0)
 
         pred = torch.sigmoid(self.model(image))
-        pred = (pred > 0.5).float()
+        pred = (pred > 0.4).float()
 
         detection = pred.cpu().detach().numpy()
         final_mask = detection[0][0].astype(np.uint8) * 255
+
+
+
 
         # Publication du masque
         image_msg = self.bridge.cv2_to_imgmsg(final_mask, "mono8")

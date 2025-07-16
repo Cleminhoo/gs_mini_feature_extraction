@@ -22,13 +22,14 @@ setup(
         'console_scripts': [
             'talker = gs_feature_extraction.publisher_member_function:main',
             'listener = gs_feature_extraction.subscriber_member_function:main',
-            'image = gs_feature_extraction.rgb_gray:main',
-            'image2 = gs_feature_extraction.filter_depth:main',
-            'optical_flow1 = gs_feature_extraction.optical_flow:main',
-            'corners = gs_feature_extraction.corner_detection:main',
-            'elipse = gs_feature_extraction.elipse_descriptor:main',
+            'image = gs_feature_extraction.rgb_gray:main',            
+            'optical_flow1 = gs_feature_extraction.optical_flow:main',  
             'save_img = gs_feature_extraction.save_images:main',
+            'filter_depth = gs_feature_extraction.filter_depth:main',
+            'elipse = gs_feature_extraction.elipse_descriptor:main',
+            'corners = gs_feature_extraction.corner_detection:main',
             'nn_detect = gs_feature_extraction.detect:main',
+            
         ],
     },
 )
