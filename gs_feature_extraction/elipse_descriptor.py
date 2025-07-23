@@ -143,8 +143,10 @@ class ImageSubscriberPublisher(Node):
                     depth_data_p1 = 0.0
                     depth_data_p2 = 0.0
 
-                r = math.sqrt((x_center-160)**2+(y_center-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
-                print(r)
+                cv2.line(colourmask,(int(w/2),int(h/2)),(x_center,y_center),(0,0,255 ),1)
+
+                r = (math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                #print(r)
 
                 self.publish_feature_coords(x_center, y_center, point1, point2, math.pi-alpha, depth_data_p1,depth_data_p2,r)
 

@@ -176,8 +176,10 @@ class CornerDetectionNode(Node):
                     depth_data_p1 = 0.0
                     depth_data_p2 = 0.0
 
-                r = math.sqrt((x_c-160)**2+(y_c-140)**2) # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
-                print(r)
+                cv2.line(colourmask,(int(w/2),int(h/2)),(x_c,y_c),(0,0,255 ),1)
+
+                r = (math.sin(alpha)*(pt1_major[0]+pt2_major[0]-w)+math.cos(alpha)*(pt1_major[1]+pt2_major[1]-h))/2 # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
+                #print(r)
                 
                 #Publication des données voulues 
                 self.publish_feature_coords(x_c, y_c, pt1_major, pt2_major, alpha, depth_data_p1, depth_data_p2, r)

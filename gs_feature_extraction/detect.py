@@ -13,6 +13,8 @@ from albumentations.pytorch import ToTensorV2
 import numpy as np
 
 import time
+import cv2
+import math
 
 class PanelLineDetector(Node):
     def __init__(self):
@@ -63,6 +65,8 @@ class PanelLineDetector(Node):
         # Traitement de l'image
         #image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
+        h, w = image.shape[:2]
+
         start = time.time()
         image = self.test_transform(image=image)['image']
         image = image.to(self.DEVICE).unsqueeze(0)
@@ -72,12 +76,51 @@ class PanelLineDetector(Node):
 
         detection = pred.cpu().detach().numpy()
         final_mask = detection[0][0].astype(np.uint8) * 255
+        contours_thresh, _ = cv2.findContours(final_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        colourmask= final_mask.copy()
+        colourmask = cv2.cvtColor(colourmask, cv2.COLOR_GRAY2RGB)
 
+        for cnt in contours_thresh:
+            area = cv2.contourArea(cnt)
+            if area >= 20:
+                # x_values = cnt[:, :, 0]
+                # y_values = cnt[:, :, 1]
 
+                # min_x = x_values.min()
+                # max_x = x_values.max()
+                # min_y = y_values.min()
+                # max_y = y_values.max()
+                leftmost = tuple(cnt[cnt[:, :, 0].argmin()][0])
+                rightmost = tuple(cnt[cnt[:, :, 0].argmax()][0])
+                
+                alpha= math.pi/2 +math.atan2((leftmost[0]-rightmost[0]),(leftmost[1]-rightmost[1]))
+            
+                #coordonnées du centroïde 
+                cx = int((leftmost[0]+rightmost[0])/2)
+                cy = int((leftmost[1]+rightmost[1])/2)
 
+                [vx, vy, x, y] = cv2.fitLine(cnt, cv2.DIST_L2, 0, 0.01, 0.01)
+
+                lefty = int((-x * vy / vx) + y)
+                righty = int(((final_mask.shape[1] - x) * vy / vx) + y)
+
+                point1 = (final_mask.shape[1] - 1, righty)
+                point2 = (0, lefty)
+                cv2.line(colourmask, point1, point2, (255, 0, 0), 1)
+                cv2.circle(colourmask, leftmost, 5, (0, 0, 255), -1)
+                cv2.circle(colourmask, rightmost, 5, (0, 255, 0), -1)
+                cv2.circle(colourmask, (cx,cy), 5, (0, 255, 0), -1)
+
+                cv2.circle(colourmask, (int(w/2),int(h/2)), 5, (255,0,0), 1)
+                cv2.line(colourmask,(int(w/2),int(h/2)),(cx,cy),(0,0,255 ),1)
+
+                r=(math.sin(alpha)*(leftmost[0]+rightmost[0]-w)+math.cos(alpha)*(leftmost[1]+rightmost[1]-h))/2
+                print('r: ',r)
+                print('a:', alpha)
 
         # Publication du masque
-        image_msg = self.bridge.cv2_to_imgmsg(final_mask, "mono8")
+        
+        image_msg = self.bridge.cv2_to_imgmsg(colourmask, "rgb8")
         image_msg.header.stamp = msg.header.stamp
         image_msg.header.frame_id = "os_sensor"
         self.detection_img_pub.publish(image_msg)

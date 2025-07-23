@@ -125,9 +125,6 @@ class ImageSubscriberPublisher(Node):
 
                     cv2.circle(filtered,(cx,cy),5,(0,255,255),1) 
 
-                    r = math.sqrt((cx-160)**2+(cy-140)**2)#calcul de la distance pour effectuer des comparaisons avec les autres modèles
-                    print(r)
-
             # Approximation d’une ligne sur le premier contour
                     [vx, vy, x, y] = cv2.fitLine(cnt, cv2.DIST_L2, 0, 0.01, 0.01)
 
@@ -141,6 +138,10 @@ class ImageSubscriberPublisher(Node):
                     #y_center = int(ellipse[0][1])
                     alpha= math.pi/2 +math.atan2((point2[0]-point1[0]),(point2[1]-point1[1]))
 
+                    cv2.line(colourmask,(int(w/2),int(h/2)),(cx,cy),(0,0,255 ),1)
+
+                    r = (math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                    # print(r)
 
                     try:
                         cv2.line(filtered, point1, point2, (255, 0, 0), 2)
