@@ -138,10 +138,10 @@ class ImageSubscriberPublisher(Node):
                     #y_center = int(ellipse[0][1])
                     alpha= math.pi/2 +math.atan2((point2[0]-point1[0]),(point2[1]-point1[1]))
 
-                    cv2.line(colourmask,(int(w/2),int(h/2)),(cx,cy),(0,0,255 ),1)
+                    cv2.line(filtered,(int(w/2),int(h/2)),(int(cx),int(cy)),(0,0,255 ),1)
 
                     r = (math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
-                    # print(r)
+                    print('r = ', r)
 
                     try:
                         cv2.line(filtered, point1, point2, (255, 0, 0), 2)

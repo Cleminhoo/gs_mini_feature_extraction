@@ -11,6 +11,7 @@ from scipy.spatial import distance
 from std_msgs.msg import Float32MultiArray
 import math
 
+
 import time
 
 class CornerDetectionNode(Node):
@@ -59,7 +60,7 @@ class CornerDetectionNode(Node):
         start = time.time()
 
         if msg.encoding == 'mono16':
-            frame = cv2.convertScaleAbs(cv_image, alpha=(255/65356))#conversion d'une image de 16 bits à 8 bits
+            frame = cv.convertScaleAbs(cv_image, alpha=(255/65356))#conversion d'une image de 16 bits à 8 bits
         else:
             frame = cv_image.copy()
 
@@ -176,7 +177,7 @@ class CornerDetectionNode(Node):
                     depth_data_p1 = 0.0
                     depth_data_p2 = 0.0
 
-                cv2.line(colourmask,(int(w/2),int(h/2)),(x_c,y_c),(0,0,255 ),1)
+                cv.line(frame_rgb,(int(w/2),int(h/2)),(int(x_c),int(y_c)),(0,0,255 ),1)
 
                 r = (math.sin(alpha)*(pt1_major[0]+pt2_major[0]-w)+math.cos(alpha)*(pt1_major[1]+pt2_major[1]-h))/2 # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
                 #print(r)
