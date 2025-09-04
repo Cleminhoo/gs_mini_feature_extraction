@@ -144,7 +144,7 @@ class ImageSubscriberPublisher(Node):
 
                     cv2.line(filtered,(int(w/2),int(h/2)),(int(cx),int(cy)),(0,0,255 ),1)
 
-                    r = (math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                    r = abs(math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                     print('r = ', r)
 
                     try:

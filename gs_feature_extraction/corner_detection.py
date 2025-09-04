@@ -186,7 +186,7 @@ class CornerDetectionNode(Node):
 
                 cv.line(frame_rgb,(int(w/2),int(h/2)),(int(x_c),int(y_c)),(0,0,255 ),1)
 
-                r = (math.sin(alpha)*(pt1_major[0]+pt2_major[0]-w)+math.cos(alpha)*(pt1_major[1]+pt2_major[1]-h))/2 # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
+                r = abs(math.sin(alpha)*(pt1_major[0]+pt2_major[0]-w)+math.cos(alpha)*(pt1_major[1]+pt2_major[1]-h))/2 # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
                 #print(r)
                 time_exec = 1000*(time.time() - start)
 
