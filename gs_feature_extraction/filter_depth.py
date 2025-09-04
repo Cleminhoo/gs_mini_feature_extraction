@@ -9,6 +9,7 @@ import math
 
 import time
 
+
 class ImageSubscriberPublisher(Node):
     def __init__(self):
         super().__init__('image_subscriber_publisher')
@@ -44,6 +45,7 @@ class ImageSubscriberPublisher(Node):
 
 
     def image_callback(self, msg):
+        
         if(1):
             self.get_logger().info(f"Image encoding: {msg.encoding}")
             
@@ -111,12 +113,14 @@ class ImageSubscriberPublisher(Node):
           #              cv2.ellipse(filtered,ellipse,(0,255,0),2)
            #         except:
            #             None
-                
-
-
+            
+            out_path = "/root/gelsight_ros2/results_txt/filter_depth.txt"
+            flag_area = True
             for cnt in contours:
                 area = cv2.contourArea(cnt)
                 if area >= min_area:
+                    flag_area = False
+
                     cv2.drawContours(filtered, [cnt], -1, (0, 0, 255), 1)
                     M = cv2.moments(cnt)
                     print( M )
@@ -153,6 +157,8 @@ class ImageSubscriberPublisher(Node):
                     except:
                         None
 
+
+
                 #send depth information
                 # try:
                 #     depth_data = cv_image_8[y_center] [x_center] # extraire la coordonnée z de l'image 
@@ -184,7 +190,22 @@ class ImageSubscriberPublisher(Node):
 
                 self.publish_feature_coords(cx, cy, point1, point2,alpha, depth_data_p1, depth_data_p2,r)#Publication du message qui affiche les coordonnées du cercle,les deux extremités de la droite et l'angle alpha.
 
-            
+            time_exec = 1000*(time.time() - start)
+            print( "Process time: " + str(time_exec))
+            if not contours:            
+                #print(out_path)
+                #with out_path.open('a', encoding='utf-8') as f:
+                with open(out_path,"a") as f:
+                    f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")
+            else:
+                if flag_area:
+                    with open(out_path,"a") as f:
+                        f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")
+                else:
+                    with open(out_path,"a") as f:
+                    #   for b, c in enumerate(i, start=0):
+                        f.write(f"{r},{alpha},{x_center},{y_center},{point2[0]},{point2[1]},{point1[0]},{point1[1]},{time_exec}\n")
+
             # 7. Conversion finale en niveaux de gris
             final_edges = cv2.cvtColor(thinned, cv2.COLOR_GRAY2RGB)
 

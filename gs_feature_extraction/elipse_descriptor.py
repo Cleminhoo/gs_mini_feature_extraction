@@ -42,6 +42,9 @@ class ImageSubscriberPublisher(Node):
         self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
+
+        folder = get_script_dir()
+
         self.get_logger().info(f"Image encoding: {msg.encoding}")
         cv_image = self.bridge.imgmsg_to_cv2(msg)
 
@@ -73,9 +76,13 @@ class ImageSubscriberPublisher(Node):
         x_center, y_center = 0, 0
         point1, point2 = (0, 0), (0, 0)
         alpha = 0
+        time_exec = 0
 
+        out_path = "/root/gelsight_ros2/results_txt/elipse.txt"
+        flag_area = True
         for cnt in contours_thresh:
             if cv2.contourArea(cnt) >= min_area:
+                flag_area = False
                 try:
                     ellipse = cv2.fitEllipse(cnt)
                     (x_center, y_center), (a_len, b_len), angle = ellipse
@@ -145,13 +152,30 @@ class ImageSubscriberPublisher(Node):
 
                 #cv2.line(filtered,(int(w/2),int(h/2)),(x_center,y_center),(0,0,255 ),1)
 
-                r = (math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
+                r = abs(math.sin(alpha)*(point1[0]+point2[0]-w)+math.cos(alpha)*(point1[1]+point2[1]-h))/2#calcul de la distance pour effectuer des comparaisons avec les autres modèles
                 print('r = ',r)
+
 
                 self.publish_feature_coords(x_center, y_center, point1, point2, math.pi-alpha, depth_data_p1,depth_data_p2,r)
 
+        time_exec = 1000*(time.time() - start)
+        print( "Process time: " + str(time_exec))
+        if not contours_thresh:            
+            #print(out_path)
+            #with out_path.open('a', encoding='utf-8') as f:
+            with open(out_path,"a") as f:
+                f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")
+        else:
+            if flag_area:
+                with open(out_path,"a") as f:
+                    f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")
+            else:
+                with open(out_path,"a") as f:
+                #   for b, c in enumerate(i, start=0):
+                    f.write(f"{r},{alpha},{x_center},{y_center},{point2[0]},{point2[1]},{point1[0]},{point1[1]},{time_exec}\n")
+
         filtered_msg = self.bridge.cv2_to_imgmsg(filtered, encoding='bgr8')
-        print( "Process time: " + str(1000*(time.time() - start)))
+        
         self.publisher.publish(filtered_msg)
 
 def main(args=None):

@@ -14,6 +14,7 @@ import math
 
 import time
 
+
 class CornerDetectionNode(Node):
     def __init__(self):
         super().__init__('corner_detection_node')
@@ -48,6 +49,7 @@ class CornerDetectionNode(Node):
         self.coord_publisher.publish(msg)
 
     def image_callback(self, msg):
+
         self.get_logger().info(f"Image encoding: {msg.encoding}")
         # try:
         #     frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
@@ -90,7 +92,11 @@ class CornerDetectionNode(Node):
         )
 
         # Affichage des coins détectés
-        if corners is not None:
+
+        out_path = "/root/gelsight_ros2/results_txt/corner_detection.txt"
+        time_exec = 0
+        
+        if corners is not None :
             points = []
             for i in range(corners.shape[0]):
                 x, y = corners[i, 0]
@@ -133,6 +139,7 @@ class CornerDetectionNode(Node):
 
 
             if len(points) >= 5:
+                
                 ellipse = cv.fitEllipse(points.astype(np.float32))
                 center, axes, angle = ellipse
                 x_c, y_c = center
@@ -181,7 +188,12 @@ class CornerDetectionNode(Node):
 
                 r = (math.sin(alpha)*(pt1_major[0]+pt2_major[0]-w)+math.cos(alpha)*(pt1_major[1]+pt2_major[1]-h))/2 # calcul de la distance pour effectuer des comparaisons avec les autres modèles.
                 #print(r)
-                
+                time_exec = 1000*(time.time() - start)
+
+                with open(out_path,"a") as f:
+                #   for b, c in enumerate(i, start=0):
+                    f.write(f"{r},{alpha},{x_c},{y_c},{pt2_major[0]},{pt2_major[1]},{pt1_major[0]},{pt1_major[1]},{time_exec}\n")
+
                 #Publication des données voulues 
                 self.publish_feature_coords(x_c, y_c, pt1_major, pt2_major, alpha, depth_data_p1, depth_data_p2, r)
 
@@ -195,10 +207,22 @@ class CornerDetectionNode(Node):
 
             #     # Tracer la droite sur l’image
             #     cv.line(frame_rgb, (x0, y0), (x1, y1), (0, 0, 255), 1)
-
+            
+            else:
+                with open(out_path,"a") as f:
+                    f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")
+        else:            
+            #print(out_path)
+            #with out_path.open('a', encoding='utf-8') as f:
+            with open(out_path,"a") as f:
+                f.write(f" {0},{0},{0},{0},{0},{0},{0},{0},{0}\n")    
         # Affichage pour debug
         cv.imshow("Corners", frame_rgb)
         cv.waitKey(1)
+
+        print( "Process time: " + str(time_exec))
+        
+ 
 
         print( "Process time: " + str(1000*(time.time() - start)))
 
